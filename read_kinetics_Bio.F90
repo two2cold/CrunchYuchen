@@ -80,10 +80,7 @@ use mineral, only:     umin,      &
                        MetabolicLagAqueous,                   &
                        RampTimeAqueous,ThresholdConcentrationAqueous,  &
                        SubstrateForLagAqueous,  &
-                       SaturationDependSleepAqueous, &
-                       SaturationDependAwakeAqueous, &
-                       FastBugsAqueous, &
-                       SlowBugsAqueous, &
+                       SaturationDependYuchen,  &
                        ResidualSaturationAqueous, &
                        SatHalf_kin,        &
                        bManzoni_kin,         &
@@ -189,10 +186,7 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
     REAL(DP)                                                      :: RampTime
     REAL(DP)                                                      :: ThresholdConcentration
     character(len=mls)                                            :: SubstrateForLag
-    logical(LGT)                                                  :: SaturationDependSleep
-    logical(LGT)                                                  :: SaturationDependAwake
-    logical(LGT)                                                  :: FastBugs
-    logical(LGT)                                                  :: SlowBugs
+    logical(LGT)                                                  :: SaturationDependYuchen
     REAL(DP)                                                      :: ResidualSaturation
     REAL(DP)                                                      :: bManzoni
     REAL(DP)                                                      :: SatHalf
@@ -222,10 +216,7 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
                                                                RampTime,               &
                                                                ThresholdConcentration, &
                                                                SubstrateForLag,        &
-                                                               SaturationDependSleep,  &
-                                                               SaturationDependAwake,  &
-                                                               FastBugs,               &
-                                                               SlowBugs,               &
+                                                               SaturationDependYuchen,  &
                                                                ResidualSaturation,     &
                                                                bManzoni,              &
                                                                SatHalf
@@ -249,10 +240,7 @@ integer(i4b),dimension(:),allocatable                         :: chi_
 integer(i4b),dimension(:),allocatable                         :: direction_
 !!CIS added Nov. 29, 2011
 logical(lgt),dimension(:),allocatable                         :: UseMetabolicLag_
-logical(lgt),dimension(:),allocatable                         :: SaturationDependSleep_
-logical(lgt),dimension(:),allocatable                         :: SaturationDependAwake_
-logical(lgt),dimension(:),allocatable                         :: FastBugs_
-logical(lgt),dimension(:),allocatable                         :: SlowBugs_
+logical(lgt),dimension(:),allocatable                         :: SaturationDependYuchen_
 real(dp),dimension(:),allocatable                             :: LagTime_
 real(dp),dimension(:),allocatable                             :: RampTime_
 real(dp),dimension(:),allocatable                             :: ThresholdConcentration_
@@ -299,10 +287,7 @@ allocate(bq_(mpre)); bq_ = 0.0d0
 allocate(direction_(mpre)); direction_ = -1
 !!CIS added Nov. 29, 2011
 allocate(UseMetabolicLag_(mpre)); UseMetabolicLag_ = .false.
-allocate(SaturationDependSleep_(mpre)); SaturationDependSleep_ = .false.
-allocate(SaturationDependAwake_(mpre)); SaturationDependAwake_ = .false.
-allocate(FastBugs_(mpre)); FastBugs_ = .false.
-allocate(SlowBugs_(mpre)); SlowBugs_ = .false.
+allocate(SaturationDependYuchen_(mpre)); SaturationDependYuchen_ = .false.
 allocate(LagTime_(mpre)); LagTime_ = 0.0d0
 allocate(RampTime_(mpre)); RampTime_ = 0.0d0
 allocate(ThresholdConcentration_(mpre)); ThresholdConcentration_ = 0.0d0
@@ -340,25 +325,10 @@ IF (ALLOCATED(UseMetabolicLagAqueous)) THEN
 END IF
 allocate(UseMetabolicLagAqueous(mpre))
 
-IF (ALLOCATED(SaturationDependSleepAqueous)) THEN
-  DEALLOCATE(SaturationDependSleepAqueous)
+IF (ALLOCATED(SaturationDependYuchen)) THEN
+  DEALLOCATE(SaturationDependYuchen)
 END IF
-allocate(SaturationDependSleepAqueous(mpre))
-
-IF (ALLOCATED(SaturationDependAwakeAqueous)) THEN
-  DEALLOCATE(SaturationDependAwakeAqueous)
-END IF
-allocate(SaturationDependAwakeAqueous(mpre))
-
-IF (ALLOCATED(FastBugsAqueous)) THEN
-DEALLOCATE(FastBugsAqueous)
-END IF
-allocate(FastBugsAqueous(mpre))
-
-IF (ALLOCATED(SlowBugsAqueous)) THEN
-DEALLOCATE(SlowBugsAqueous)
-END IF
-allocate(SlowBugsAqueous(mpre))
+allocate(SaturationDependYuchen(mpre))
 
 IF (ALLOCATED(SubstrateForLagAqueous)) THEN
   DEALLOCATE(SubstrateForLagAqueous)
@@ -786,10 +756,7 @@ do_aqueouskinetics: do
   SubstrateForLag = ' '
 
   ! fluid saturation related microbial activity -- Jenny added June 2016
-  SaturationDependSleep = .false.
-  SaturationDependAwake = .false.
-  FastBugs = .false.
-  SlowBugs = .false.
+  SaturationDependYuchen = .false.
   ResidualSaturation = 0.0d0
   bManzoni = 0.0d0
   SatHalf = 0.0d0
@@ -895,8 +862,7 @@ else
       end if
 
 !     save saturation parameters
-      SaturationDependSleep_(jkin) = SaturationDependSleep
-      SaturationDependAwake_(jkin) = SaturationDependAwake
+      SaturationDependYuchen_(jkin) = SaturationDependYuchen
       ResidualSaturation_(jkin) = ResidualSaturation
       bManzoni_(jkin) = bManzoni
       SatHalf_(jkin) = SatHalf
@@ -953,8 +919,6 @@ else
       LagTime_(jkin) = LagTime
       Ramptime_(jkin) = RampTime
       ThresholdConcentration_(jkin) = ThresholdConcentration
-      FastBugs_(jkin) = FastBugs
-      SlowBugs_(jkin) = SlowBugs
 
 
 !!    Find the substrate to trigger the metabolic lag stage (associated with ThresholdConcentrationAqueous)
@@ -1592,16 +1556,13 @@ do jj=1,ikin
     RampTimeAqueous(jj) = RampTime_(jj)
     ThresholdConcentrationAqueous(jj) = ThresholdConcentration_(jj)
     SubstrateForLagAqueous(jj) = SubstrateForLag_(jj)
-    FastBugsAqueous(jj) = FastBugs_(jj)
-    SlowBugsAqueous(jj) = SlowBugs_(jj)
 
     nMonodBiomassAqueous = nMonodBiomassAqueous + 1
 
   else
 
     direction_kin(jj) = direction_(jj)
-    SaturationDependSleepAqueous(jj) = SaturationDependSleep_(jj)
-    SaturationDependAwakeAqueous(jj) = SaturationDependAwake_(jj)
+    SaturationDependYuchen(jj) = SaturationDependYuchen_(jj)
     ResidualSaturationAqueous(jj) = ResidualSaturation_(jj)
     SatHalf_kin(jj) = SatHalf_(jj)
     bManzoni_kin(jj) = bManzoni_(jj)

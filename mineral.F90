@@ -234,10 +234,7 @@ MODULE mineral
 
   logical(lgt),dimension(:,:),allocatable          :: UseMetabolicLagMineral
   logical(lgt),dimension(:),allocatable            :: UseMetabolicLagAqueous
-  logical(lgt),dimension(:),allocatable            :: SaturationDependSleepAqueous
-  logical(lgt),dimension(:),allocatable            :: SaturationDependAwakeAqueous
-  logical(lgt),dimension(:),allocatable            :: FastBugsAqueous
-  logical(lgt),dimension(:),allocatable            :: SlowBugsAqueous
+  logical(lgt),dimension(:),allocatable            :: SaturationDependYuchen
 
   REAL(DP), DIMENSION(:,:,:,:,:), ALLOCATABLE        :: tauZeroMineral
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE          :: tauZeroAqueous

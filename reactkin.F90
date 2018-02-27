@@ -56,10 +56,7 @@ use mineral, only:     volfx,volmol,  &
                        bq_kin, chi_kin, direction_kin, &
                        UseMetabolicLagAqueous,LagTimeAqueous, &
                        MetabolicLagAqueous,                   &
-                       SaturationDependSleepAqueous,           &
-                       SaturationDependAwakeAqueous,           &
-                       FastBugsAqueous,                       &
-                       SlowBugsAqueous,                       &
+                       SaturationDependYuchen,           &
                        ResidualSaturationAqueous,             &
                        bManzoni_kin,                         &
                        SatHalf_kin,                          &
@@ -468,32 +465,6 @@ DO ir = 1,ikin
         sumkin = sumkin + raq(ll,ir)
       END DO
 !! Jenny added fluid sat dependent inhibition for Yuchen's incubations
-    ELSE IF (FastBugsAqueous(ir)) THEN
-      sumkin = 0.0
-      DO ll = 1,nreactkin(ir)
-        SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-        SatEffectiveHalf = (SatHalf_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-        IF (SatEffective < 0.5) THEN
-          YuchenFast = (1 + (1 - 2*SatEffective)**(1.0/3.0))/2
-        ELSE
-          YuchenFast = (1 - (2*SatEffective - 1)**(1.0/3.0))/2
-        END IF
-        raq(ll,ir) = vol_temp*ratek(ll,ir)*YuchenFast*pre_raq(ll,ir)*affinity
-        sumkin = sumkin + raq(ll,ir)
-      END DO
-    ELSE IF (SlowBugsAqueous(ir)) THEN
-      sumkin = 0.0
-      DO ll = 1,nreactkin(ir)
-        SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-        SatEffectiveHalf = (SatHalf_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-        IF (SatEffective < 0.5) THEN
-          YuchenSlow = (1 - (1 - 2*SatEffective)**(1.0/3.0))/2
-        ELSE
-          YuchenSlow = (1 + (2*SatEffective - 1)**(1.0/3.0))/2
-        END IF
-        raq(ll,ir) = vol_temp*ratek(ll,ir)*YuchenSlow*pre_raq(ll,ir)*affinity
-        sumkin = sumkin + raq(ll,ir)
-      END DO
     ELSE
       sumkin = 0.0
       DO ll = 1,nreactkin(ir)
@@ -507,14 +478,14 @@ DO ir = 1,ikin
     sumkin = 0.0
     DO ll = 1,nreactkin(ir)
 !  Jenny added fluid saturation dependence based on Manzoni June 2016
-      IF (SaturationDependSleepAqueous(ir)) THEN
+      IF (SaturationDependYuchen(ir)) THEN
         iby = ibioyuchen_kin(ir)
         vol_temp = volfx(iby,jx,jy,jz)
         SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
         SatEffectiveHalf = (SatHalf_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
         YuchenSleep = (SatEffective**(-bManzoni_kin(ir)))/(SatEffective**(-bManzoni_kin(ir)) + SatEffectiveHalf**(-bManzoni_kin(ir)))
         raq(ll,ir) = vol_temp*ratek(ll,ir)*YuchenSleep*pre_raq(ll,ir)*affinity
-      ELSE IF (SaturationDependAwakeAqueous(ir)) THEN
+      ELSE IF (SaturationDependYuchen(ir)) THEN
         iby = ibioyuchen_kin(ir)
         vol_temp = volfx(iby,jx,jy,jz)
         SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
