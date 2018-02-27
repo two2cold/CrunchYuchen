@@ -80,10 +80,11 @@ use mineral, only:     umin,      &
                        MetabolicLagAqueous,                   &
                        RampTimeAqueous,ThresholdConcentrationAqueous,  &
                        SubstrateForLagAqueous,  &
-                       SaturationDependYuchen,  &
+                       SaturationDependYuchenAqueous,  &
                        ResidualSaturationAqueous, &
-                       SatHalf_kin,        &
-                       bManzoni_kin,         &
+                       averageNormal_kin,        &
+                       standardDeviationNormal_kin,         &
+                       maxNormal_kin,  &
                        ibioyuchen_kin, &
                        nMonodBiomassAqueous
 USE strings
@@ -188,8 +189,9 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
     character(len=mls)                                            :: SubstrateForLag
     logical(LGT)                                                  :: SaturationDependYuchen
     REAL(DP)                                                      :: ResidualSaturation
-    REAL(DP)                                                      :: bManzoni
-    REAL(DP)                                                      :: SatHalf
+    REAL(DP)                                                      :: standardDeviationNormal
+    REAL(DP)                                                      :: maxNormal
+    REAL(DP)                                                      :: averageNormal
     character(len=mls)                                            :: bioyuchen
 
     namelist /Aqueous/                                         name,          &
@@ -218,8 +220,9 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
                                                                SubstrateForLag,        &
                                                                SaturationDependYuchen,  &
                                                                ResidualSaturation,     &
-                                                               bManzoni,              &
-                                                               SatHalf
+                                                               standardDeviationNormal,              &
+                                                               maxNormal,    &
+                                                               averageNormal
 !
 ! end namelists -------------------------------------------------------------
 
@@ -245,8 +248,9 @@ real(dp),dimension(:),allocatable                             :: LagTime_
 real(dp),dimension(:),allocatable                             :: RampTime_
 real(dp),dimension(:),allocatable                             :: ThresholdConcentration_
 real(dp),dimension(:),allocatable                             :: ResidualSaturation_
-real(dp),dimension(:),allocatable                             :: bManzoni_
-real(dp),dimension(:),allocatable                             :: SatHalf_
+real(dp),dimension(:),allocatable                             :: standardDeviationNormal_
+real(dp),dimension(:),allocatable                             :: maxNormal_
+real(dp),dimension(:),allocatable                             :: averageNormal_
 integer(i4b),dimension(:),allocatable                         :: SubstrateForLag_
 
 
@@ -292,8 +296,9 @@ allocate(LagTime_(mpre)); LagTime_ = 0.0d0
 allocate(RampTime_(mpre)); RampTime_ = 0.0d0
 allocate(ThresholdConcentration_(mpre)); ThresholdConcentration_ = 0.0d0
 allocate(ResidualSaturation_(mpre)); ResidualSaturation_ = 0.0d0
-allocate(bManzoni_(mpre)); bManzoni_ = 0.0d0
-allocate(SatHalf_(mpre)); SatHalf_ = 0.0d0
+allocate(standardDeviationNormal_(mpre)); standardDeviationNormal_ = 0.0d0
+allocate(maxNormal_(mpre)); maxNormal_ = 0.0d0
+allocate(averageNormal_(mpre)); averageNormal_ = 0.0d0
 allocate(SubstrateForLag_(mpre)); SubstrateForLag_ = 0.0d0
 
 allocate(name_pathway(mpre)); name_pathway(:) = ''
@@ -325,10 +330,10 @@ IF (ALLOCATED(UseMetabolicLagAqueous)) THEN
 END IF
 allocate(UseMetabolicLagAqueous(mpre))
 
-IF (ALLOCATED(SaturationDependYuchen)) THEN
-  DEALLOCATE(SaturationDependYuchen)
+IF (ALLOCATED(SaturationDependYuchenAqueous)) THEN
+  DEALLOCATE(SaturationDependYuchenAqueous)
 END IF
-allocate(SaturationDependYuchen(mpre))
+allocate(SaturationDependYuchenAqueous(mpre))
 
 IF (ALLOCATED(SubstrateForLagAqueous)) THEN
   DEALLOCATE(SubstrateForLagAqueous)
@@ -758,8 +763,9 @@ do_aqueouskinetics: do
   ! fluid saturation related microbial activity -- Jenny added June 2016
   SaturationDependYuchen = .false.
   ResidualSaturation = 0.0d0
-  bManzoni = 0.0d0
-  SatHalf = 0.0d0
+  standardDeviationNormal = 0.0d0
+  maxNormal = 0.0d0
+  averageNormal = 0.0d0
   bioyuchen = 'default'
 
 ! read 'AqueousKinetics' namelist from file
@@ -864,8 +870,9 @@ else
 !     save saturation parameters
       SaturationDependYuchen_(jkin) = SaturationDependYuchen
       ResidualSaturation_(jkin) = ResidualSaturation
-      bManzoni_(jkin) = bManzoni
-      SatHalf_(jkin) = SatHalf
+      standardDeviationNormal_(jkin) = standardDeviationNormal
+      maxNormal_(jkin) = maxNormal
+      averageNormal_(jkin) = averageNormal
 !     find the biomass for wake up and sleep reactions in the mineral list
       iby = 0
       do_bioyuchen: do im=1,nkin
@@ -882,7 +889,7 @@ else
 !     biomass pointer
       ibioyuchen_kin_temp(jkin)   = iby
 !!      write(*,*) SaturationDependSleep
-!!      write(*,*) SatHalf_(ikin)
+!!      write(*,*) averageNormal_(ikin)
 !!      read(*,*)
 
 
@@ -1562,10 +1569,11 @@ do jj=1,ikin
   else
 
     direction_kin(jj) = direction_(jj)
-    SaturationDependYuchen(jj) = SaturationDependYuchen_(jj)
+    SaturationDependYuchenAqueous(jj) = SaturationDependYuchen_(jj)
     ResidualSaturationAqueous(jj) = ResidualSaturation_(jj)
-    SatHalf_kin(jj) = SatHalf_(jj)
-    bManzoni_kin(jj) = bManzoni_(jj)
+    averageNormal_kin(jj) = averageNormal_(jj)
+    standardDeviationNormal_kin(jj) = standardDeviationNormal_(jj)
+    maxNormal_kin(jj) = maxNormal_(jj)
     ibioyuchen_kin(jj) = ibioyuchen_kin_temp(jj)
 
   end if
@@ -1589,8 +1597,9 @@ deallocate(direction_)
 deallocate(name_pathway)
 deallocate(multiplier)
 deallocate(iuser)
-deallocate(bManzoni_)
-deallocate(SatHalf_)
+deallocate(standardDeviationNormal_)
+deallocate(maxNormal_)
+deallocate(averageNormal_)
 deallocate(ibioyuchen_kin_temp)
 
 DEALLOCATE(rinhibit_tmp)

@@ -118,11 +118,8 @@ REAL(DP)                                             :: MonodTerm2
 REAL(DP)                                             :: term1Perturb
 REAL(DP)                                             :: term2Perturb
 REAL(DP)                                             :: SatEffective
-REAL(DP)                                             :: SatEffectiveHalf
-REAL(DP)                                             :: YuchenSleep
-REAL(DP)                                             :: YuchenAwake
-REAL(DP)                                             :: YuchenFast
-REAL(DP)                                             :: YuchenSlow
+REAL(DP)                                             :: SatEffectiveNormal
+REAL(DP)                                             :: YuchenNormal
 !!EAL(DP) , DIMENSION(ncomp)                          :: stmp
 REAL(DP) , DIMENSION(ncomp)                          :: Checkjac_prekin
 REAL(DP) , DIMENSION(ncomp,ncomp)                    :: sTMPperturb
@@ -560,17 +557,11 @@ DO ir = 1,ikin
 
     DO i = 1,ncomp
       DO ll = 1,nreactkin(ir)
-        IF (SaturationDependYuchen(ir)) THEN
+        IF (SaturationDependYuchenAqueous(ir)) THEN
           SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-          SatEffectiveHalf = (SatHalf_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-          YuchenSleep = (SatEffective**(-bManzoni_kin(ir)))/(SatEffective**(-bManzoni_kin(ir)) + SatEffectiveHalf**(-bManzoni_kin(ir)))
-          rdkin(ir,i) = rdkin(ir,i) + volfx(iby,jx,jy,jz) * ratek(ll,ir)*YuchenSleep*  &
-              (pre_raq(ll,ir)*jac_sat(i) +  jac_prekin(i,ll)*affinity )
-        ELSE IF (SaturationDependYuchen(ir)) THEN
-          SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-          SatEffectiveHalf = (SatHalf_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
-          YuchenAwake = (SatEffectiveHalf**(-bManzoni_kin(ir)))/(20.0d0*SatEffective**(-bManzoni_kin(ir)) + SatEffectiveHalf**(-bManzoni_kin(ir)))
-          rdkin(ir,i) = rdkin(ir,i) + volfx(iby,jx,jy,jz) * ratek(ll,ir)*YuchenAwake*  &
+          SatEffectiveNormal = (averageNormal_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
+          YuchenNormal = maxNormal_kin(ir)*exp(-(SatEffective - SatEffectiveNormal)**2.0d0/2.0d0/standardDeviationNormal_kin(ir)**2.0d0)
+          rdkin(ir,i) = rdkin(ir,i) + volfx(iby,jx,jy,jz) * ratek(ll,ir)*YuchenNormal*  &
               (pre_raq(ll,ir)*jac_sat(i) +  jac_prekin(i,ll)*affinity )
         ELSE
           rdkin(ir,i) = rdkin(ir,i) + ratek(ll,ir)*  &

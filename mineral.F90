@@ -226,15 +226,16 @@ MODULE mineral
   REAL(DP), DIMENSION(:), ALLOCATABLE              :: RampTimeAqueous
   REAL(DP), DIMENSION(:), ALLOCATABLE              :: ThresholdConcentrationAqueous
   REAL(DP), DIMENSION(:), ALLOCATABLE              :: ResidualSaturationAqueous
-  REAL(DP), DIMENSION(:), ALLOCATABLE              :: SatHalf_kin
-  REAL(DP), DIMENSION(:), ALLOCATABLE              :: bManzoni_kin
+  REAL(DP), DIMENSION(:), ALLOCATABLE              :: averageNormal_kin
+  REAL(DP), DIMENSION(:), ALLOCATABLE              :: standardDeviationNormal_kin
+  REAL(DP), DIMENSION(:), ALLOCATABLE              :: maxNormal_kin
 
   integer(i4b),dimension(:,:),allocatable          :: SubstrateForLagMineral
   integer(i4b),dimension(:),allocatable            :: SubstrateForLagAqueous
 
   logical(lgt),dimension(:,:),allocatable          :: UseMetabolicLagMineral
   logical(lgt),dimension(:),allocatable            :: UseMetabolicLagAqueous
-  logical(lgt),dimension(:),allocatable            :: SaturationDependYuchen
+  logical(lgt),dimension(:),allocatable            :: SaturationDependYuchenAqueous
 
   REAL(DP), DIMENSION(:,:,:,:,:), ALLOCATABLE        :: tauZeroMineral
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE          :: tauZeroAqueous

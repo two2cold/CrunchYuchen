@@ -597,17 +597,23 @@ IF (ALLOCATED(BQ_kin)) THEN
 ELSE
   ALLOCATE(BQ_kin(mrct))
 END IF
-IF (ALLOCATED(bManzoni_kin)) THEN   !Yuchen makes changes
-  DEALLOCATE(bManzoni_kin)
-  ALLOCATE(bManzoni_kin(mrct))
+IF (ALLOCATED(standardDeviationNormal_kin)) THEN   !Yuchen makes changes
+  DEALLOCATE(standardDeviationNormal_kin)
+  ALLOCATE(standardDeviationNormal_kin(mrct))
 ELSE
-  ALLOCATE(bManzoni_kin(mrct))
+  ALLOCATE(standardDeviationNormal_kin(mrct))
 END IF
-IF (ALLOCATED(SatHalf_kin)) THEN
-  DEALLOCATE(SatHalf_kin)
-  ALLOCATE(SatHalf_kin(mrct))
+IF (ALLOCATED(maxNormal_kin)) THEN   !Yuchen makes changes
+  DEALLOCATE(maxNormal_kin)
+  ALLOCATE(maxNormal_kin(mrct))
 ELSE
-  ALLOCATE(SatHalf_kin(mrct))
+  ALLOCATE(maxNormal_kin(mrct))
+END IF
+IF (ALLOCATED(averageNormal_kin)) THEN
+  DEALLOCATE(averageNormal_kin)
+  ALLOCATE(averageNormal_kin(mrct))
+ELSE
+  ALLOCATE(averageNormal_kin(mrct))
 END IF
 
 ! biomass end

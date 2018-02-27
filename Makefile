@@ -1,6 +1,6 @@
 ALL: CrunchMain
 
-FFLAGS  = -w  
+FFLAGS  = -w
 
 SOURCEF = \
           crunchtype.F90\
@@ -633,3 +633,6 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 
 CrunchMain : ${OBJSF} chkopts
 	-${FLINKER} -o CrunchTope ${OBJSF} ${PETSC_FORTRAN_LIB} ${PETSC_LIB} ${FFLAGS}
+
+clean ::
+	$(RM) CrunchTope *.o *.mod *~
