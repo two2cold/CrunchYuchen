@@ -477,6 +477,7 @@ DO ir = 1,ikin
     sumkin = 0.0
     DO ll = 1,nreactkin(ir)
 !  Jenny added fluid saturation dependence based on Manzoni June 2016
+!  Yuchen made modifications on Feb 27 2018
       IF (SaturationDependAwakeAqueous(ir)) THEN
         iby = ibioyuchen_kin(ir)
         vol_temp = volfx(iby,jx,jy,jz)

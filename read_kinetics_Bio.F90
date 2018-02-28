@@ -771,7 +771,7 @@ do_aqueouskinetics: do
   SubstrateForLag = ' '
 
   ! fluid saturation related microbial activity -- Jenny added June 2016
-  ! Yuchen modified Feb 02 2018
+  ! Yuchen modified Feb 27 2018
   SaturationDependAwake = .false.
   SaturationDependSleep = .false.
   ResidualSaturation = 0.0d0
