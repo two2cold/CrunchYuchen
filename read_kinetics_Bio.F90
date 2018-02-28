@@ -80,7 +80,8 @@ use mineral, only:     umin,      &
                        MetabolicLagAqueous,                   &
                        RampTimeAqueous,ThresholdConcentrationAqueous,  &
                        SubstrateForLagAqueous,  &
-                       SaturationDependYuchenAqueous,  &
+                       SaturationDependAwakeAqueous,  &
+                       SaturationDependSleepAqueous,  &
                        ResidualSaturationAqueous, &
                        averageNormal_kin,        &
                        standardDeviationNormal_kin,         &
@@ -187,7 +188,8 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
     REAL(DP)                                                      :: RampTime
     REAL(DP)                                                      :: ThresholdConcentration
     character(len=mls)                                            :: SubstrateForLag
-    logical(LGT)                                                  :: SaturationDependYuchen
+    logical(LGT)                                                  :: SaturationDependAwake
+    logical(LGT)                                                  :: SaturationDependSleep
     REAL(DP)                                                      :: ResidualSaturation
     REAL(DP)                                                      :: standardDeviationNormal
     REAL(DP)                                                      :: maxNormal
@@ -218,7 +220,8 @@ integer(i4b),dimension(:),allocatable                         :: p_kin_cat
                                                                RampTime,               &
                                                                ThresholdConcentration, &
                                                                SubstrateForLag,        &
-                                                               SaturationDependYuchen,  &
+                                                               SaturationDependAwake,  &
+                                                               SaturationDependSleep,  &
                                                                ResidualSaturation,     &
                                                                standardDeviationNormal,              &
                                                                maxNormal,    &
@@ -243,7 +246,8 @@ integer(i4b),dimension(:),allocatable                         :: chi_
 integer(i4b),dimension(:),allocatable                         :: direction_
 !!CIS added Nov. 29, 2011
 logical(lgt),dimension(:),allocatable                         :: UseMetabolicLag_
-logical(lgt),dimension(:),allocatable                         :: SaturationDependYuchen_
+logical(lgt),dimension(:),allocatable                         :: SaturationDependAwake_
+logical(lgt),dimension(:),allocatable                         :: SaturationDependSleep_
 real(dp),dimension(:),allocatable                             :: LagTime_
 real(dp),dimension(:),allocatable                             :: RampTime_
 real(dp),dimension(:),allocatable                             :: ThresholdConcentration_
@@ -291,7 +295,8 @@ allocate(bq_(mpre)); bq_ = 0.0d0
 allocate(direction_(mpre)); direction_ = -1
 !!CIS added Nov. 29, 2011
 allocate(UseMetabolicLag_(mpre)); UseMetabolicLag_ = .false.
-allocate(SaturationDependYuchen_(mpre)); SaturationDependYuchen_ = .false.
+allocate(SaturationDependAwake_(mpre)); SaturationDependAwake_ = .false.
+allocate(SaturationDependSleep_(mpre)); SaturationDependSleep_ = .false.
 allocate(LagTime_(mpre)); LagTime_ = 0.0d0
 allocate(RampTime_(mpre)); RampTime_ = 0.0d0
 allocate(ThresholdConcentration_(mpre)); ThresholdConcentration_ = 0.0d0
@@ -330,10 +335,15 @@ IF (ALLOCATED(UseMetabolicLagAqueous)) THEN
 END IF
 allocate(UseMetabolicLagAqueous(mpre))
 
-IF (ALLOCATED(SaturationDependYuchenAqueous)) THEN
-  DEALLOCATE(SaturationDependYuchenAqueous)
+IF (ALLOCATED(SaturationDependAwakeAqueous)) THEN
+  DEALLOCATE(SaturationDependAwakeAqueous)
 END IF
-allocate(SaturationDependYuchenAqueous(mpre))
+allocate(SaturationDependAwakeAqueous(mpre))
+
+IF (ALLOCATED(SaturationDependSleepAqueous)) THEN
+  DEALLOCATE(SaturationDependSleepAqueous)
+END IF
+allocate(SaturationDependSleepAqueous(mpre))
 
 IF (ALLOCATED(SubstrateForLagAqueous)) THEN
   DEALLOCATE(SubstrateForLagAqueous)
@@ -761,11 +771,13 @@ do_aqueouskinetics: do
   SubstrateForLag = ' '
 
   ! fluid saturation related microbial activity -- Jenny added June 2016
-  SaturationDependYuchen = .false.
+  ! Yuchen modified Feb 02 2018
+  SaturationDependAwake = .false.
+  SaturationDependSleep = .false.
   ResidualSaturation = 0.0d0
-  standardDeviationNormal = 0.0d0
-  maxNormal = 0.0d0
-  averageNormal = 0.0d0
+  standardDeviationNormal = 0.1d0
+  maxNormal = 0.6d0
+  averageNormal = 0.5d0
   bioyuchen = 'default'
 
 ! read 'AqueousKinetics' namelist from file
@@ -868,7 +880,8 @@ else
       end if
 
 !     save saturation parameters
-      SaturationDependYuchen_(jkin) = SaturationDependYuchen
+      SaturationDependAwake_(jkin) = SaturationDependAwake
+      SaturationDependSleep_(jkin) = SaturationDependSleep
       ResidualSaturation_(jkin) = ResidualSaturation
       standardDeviationNormal_(jkin) = standardDeviationNormal
       maxNormal_(jkin) = maxNormal
@@ -1569,7 +1582,8 @@ do jj=1,ikin
   else
 
     direction_kin(jj) = direction_(jj)
-    SaturationDependYuchenAqueous(jj) = SaturationDependYuchen_(jj)
+    SaturationDependAwakeAqueous(jj) = SaturationDependAwake_(jj)
+    SaturationDependSleepAqueous(jj) = SaturationDependSleep_(jj)
     ResidualSaturationAqueous(jj) = ResidualSaturation_(jj)
     averageNormal_kin(jj) = averageNormal_(jj)
     standardDeviationNormal_kin(jj) = standardDeviationNormal_(jj)

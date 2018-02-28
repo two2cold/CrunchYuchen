@@ -557,10 +557,16 @@ DO ir = 1,ikin
 
     DO i = 1,ncomp
       DO ll = 1,nreactkin(ir)
-        IF (SaturationDependYuchenAqueous(ir)) THEN
+        IF (SaturationDependAwakeAqueous(ir)) THEN
           SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
           SatEffectiveNormal = (averageNormal_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
           YuchenNormal = maxNormal_kin(ir)*exp(-(SatEffective - SatEffectiveNormal)**2.0d0/2.0d0/standardDeviationNormal_kin(ir)**2.0d0)
+          rdkin(ir,i) = rdkin(ir,i) + volfx(iby,jx,jy,jz) * ratek(ll,ir)*YuchenNormal*  &
+              (pre_raq(ll,ir)*jac_sat(i) +  jac_prekin(i,ll)*affinity )
+        ELSEIF (SaturationDependSleepAqueous(ir)) THEN
+          SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
+          SatEffectiveNormal = (averageNormal_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
+          YuchenNormal = (1.0d0 - maxNormal_kin(ir)*exp(-(SatEffective - SatEffectiveNormal)**2.0d0/2.0d0/standardDeviationNormal_kin(ir)**2.0d0))
           rdkin(ir,i) = rdkin(ir,i) + volfx(iby,jx,jy,jz) * ratek(ll,ir)*YuchenNormal*  &
               (pre_raq(ll,ir)*jac_sat(i) +  jac_prekin(i,ll)*affinity )
         ELSE

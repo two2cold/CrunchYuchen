@@ -56,7 +56,8 @@ use mineral, only:     volfx,volmol,  &
                        bq_kin, chi_kin, direction_kin, &
                        UseMetabolicLagAqueous,LagTimeAqueous, &
                        MetabolicLagAqueous,                   &
-                       SaturationDependYuchenAqueous,           &
+                       SaturationDependAwakeAqueous,           &
+                       SaturationDependSleepAqueous,           &
                        ResidualSaturationAqueous,             &
                        standardDeviationNormal_kin,                         &
                        maxNormal_kin,                         &
@@ -476,12 +477,19 @@ DO ir = 1,ikin
     sumkin = 0.0
     DO ll = 1,nreactkin(ir)
 !  Jenny added fluid saturation dependence based on Manzoni June 2016
-      IF (SaturationDependYuchenAqueous(ir)) THEN
+      IF (SaturationDependAwakeAqueous(ir)) THEN
         iby = ibioyuchen_kin(ir)
         vol_temp = volfx(iby,jx,jy,jz)
         SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
         SatEffectiveNormal = (averageNormal_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
         YuchenNormal = maxNormal_kin(ir)*exp(-(SatEffective - SatEffectiveNormal)**2.0d0/2.0d0/standardDeviationNormal_kin(ir)**2.0d0)
+        raq(ll,ir) = vol_temp*ratek(ll,ir)*YuchenNormal*pre_raq(ll,ir)*affinity
+      ELSEIF (SaturationDependSleepAqueous(ir)) THEN
+        iby = ibioyuchen_kin(ir)
+        vol_temp = volfx(iby,jx,jy,jz)
+        SatEffective = (satliq(jx,jy,jz) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
+        SatEffectiveNormal = (averageNormal_kin(ir) - ResidualSaturationAqueous(ir))/(1.0d0 - ResidualSaturationAqueous(ir))
+        YuchenNormal = (1.0d0 - maxNormal_kin(ir)*exp(-(SatEffective - SatEffectiveNormal)**2.0d0/2.0d0/standardDeviationNormal_kin(ir)**2.0d0))
         raq(ll,ir) = vol_temp*ratek(ll,ir)*YuchenNormal*pre_raq(ll,ir)*affinity
       ELSE
         raq(ll,ir) = ratek(ll,ir)*pre_raq(ll,ir)*affinity
